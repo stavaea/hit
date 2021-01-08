@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+<html lang="en">
+<head>
+    {% block css %}
+    <style type="text/css">
+        h3,h2{
+            font-weight: bold;
+        }
+        .index-btn{
+            font-size: 20px;
+            color: #fff;
+        }
+        button.btn-bottom{
+            margin-top: 40px;
+            margin-right: 80px;
+        }
+        .case-content{
+            margin-left: 20px;
+            margin-top: 100px;
+        }
+    {% endblock %}
+    </style>
+</head>
+<body>
+    {% block content %}
+    <div class="case-content container-fluid">
+        <div class="row-fluid">
+            <div class="col-md-9">
+                <h2>新建测试用例</h2>
+                <p style="margin-top: 20px;margin-left: 20px;font-size: 18px">在测试用例中，配置接口的相关参数，并添加检查点</p>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="col-md-10" style="margin-top: 50px">
+                <form class="form-horizontal" style="margin-left: 20px" action="/task/submit/" method="post">
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">用例名称</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" name="casename" placeholder="少于20个字符">
+                    </div>
+                  </div>
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">用例描述</label>
+                    <div class="col-sm-9">
+                      <textarea  style="height: 100px" type="text" class="form-control" name="description" placeholder="少于30个字符"></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">接口URL</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" name="url">
+                    </div>
+                  </div>
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">请求类型</label>
+                    <div class="col-sm-9">
+                        <select class="form-control" name="method">
+                          <option value="GET">GET</option>
+                          <option value="POST">POST</option>
+                        </select>
+                    </div>
+                  </div>
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">头信息</label>
+                    <div class="col-sm-9">
+                        <a class="form-control btn btn-info" id="add_head">添加头信息</a>
+                    </div>
+                  </div>
+                    {#请求头列表#}
+                  <div id="head_area" class="form-group form-group-lg" style="margin-bottom: 40px">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label"></label>
+                    <div class="col-sm-9 col-md-9 re-head">
+                    </div>
+                  </div>
+
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">请求体类型</label>
+                        <div class="col-sm-9 col-md-9">
+                        <label class="radio-inline" style="margin-right: 30px;font-size: 18px;">
+                          <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="form"> form-data
+                        </label>
+                        <label class="radio-inline" style="margin-right: 30px;font-size: 18px;">
+                          <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="encode"> url-encode
+                        </label>
+                        <label class="radio-inline" style="margin-right: 30px;font-size: 18px;">
+                          <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="raw"> raw
+                        </label>
+                        <label class="radio-inline" style="margin-right: 30px;font-size: 18px;">
+                          <input type="radio" name="inlineRadioOptions" id="inlineRadio4" value="binary"> binary
+                        </label>
+                    </div>
+                  </div>
+
+                 {#请求体内容  #}
+                  <div id="body_area" class="form-group form-group-lg" style="margin-bottom: 40px">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label"></label>
+                    <div class="col-sm-9 col-md-9 re-body">
+                    </div>
+                  </div>
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">检查点</label>
+                    <div class="col-sm-9">
+                        <a id="add_check" class="form-control btn btn-warning">添加检查点</a>
+                    </div>
+                  </div>
+                  {#检查点内容#}
+                  <div id="check_area" class="form-group form-group-lg" style="margin-bottom: 40px">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label"></label>
+                    <div class="col-sm-9 col-md-9 re-check">
+                    </div>
+                  </div>
+                  <div class="form-group form-group-lg">
+                    <div class="col-sm-offset-2 col-sm-10">
+                      <button id="confirm" class="btn-bottom btn btn-success index-btn">提交</button>
+                      <button type="reset" class="btn-bottom btn btn-danger index-btn">重置</button>
+                    </div>
+                  </div>
+                </form>
+            </div>
+        </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+          function isSpace(array){
+             for(var i = 0 ;i<array.length;i++)
+             {
+                 if(array[i] == "" || typeof(array[i]) == "undefined")
+                 {
+                    return false
+                 }
+             }
+             return true;
+        }
+
+        $(function(){
+           var body_text = "";
+           $("form").bootstrapValidator({
+                message: '通用的验证失败消息',
+                feedbackIcons: {//根据验证结果显示的各种图标
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-refresh'
+                },
+                fields: {
+                    casename: {    //控件的name属性
+                        validators: {
+                            notEmpty: {//检测非空,radio也可用
+                                message: '用例名称不能为空'
+                            },
+                            stringLength: {//检测长度
+                                max: 20,
+                                message: '长度必须小于20位'
+                            }
+                        }
+                    },
+                    url: {
+                        validators: {
+                            notEmpty: {
+                                message: '接口地址不能为空'
+                            }
+                        }
+                    },
+                    check: {
+                        validators: {
+                            notEmpty: {
+                                message: '必须添加至少一个检查点'
+                            }
+                        }
+                    }
+            }
+           });
+           $("#head_area").hide();
+           $("#body_area").hide();
+           $("#check_area").hide();
+           $("#add_head").click(function () {
+               $("#head_area").show();
+               var text = "<div class=\"row\" style=\"margin-bottom: 20px\">"+
+                       "<div class=\"col-sm-6 col-md-6\"><div class=\"input-group input-group-lg\">"+
+                       "<span class=\"input-group-btn\"><button class=\"head-delete btn btn-danger\" type=\"button\">-</button>"+
+                       "</span><input type=\"text\" placeholder=\"key\" class=\"head-key form-control\" aria-describedby=\"sizing-addon1\">"+
+                       "</div></div><div class=\"col-sm-6 col-md-6\">"+
+                       "<input type=\"text\" placeholder=\"value\" name=\"head_value\" class=\"head-value form-control\" aria-describedby=\"sizing-addon1\">"+
+                       "</div></div>";
+               $("div.re-head").append(text);
+           });
+           $("body").on("click", "button.head-delete", function () {
+               $(this).parents("div.row").remove();
+               if($("div.re-head div.row").length == 0){
+                   $("#head_area").hide();
+               }
+           }) ;
+           $("small").css('font-size', "16px");
+           $("#inlineRadio1,#inlineRadio2").click(function () {
+               $("#body_area div.row").remove();
+               $("#body_area").show();
+               body_text = "<div class=\"row\" style=\"margin-bottom: 20px\">"+
+                       "<div class=\"col-sm-6 col-md-6\"><div class=\"input-group input-group-lg\">"+
+                       "<span class=\"input-group-btn\"><button class=\"body-delete btn btn-danger\" type=\"button\">-</button>"+
+                       "</span><input type=\"text\" placeholder=\"key\" class=\"body-key form-control\" aria-describedby=\"sizing-addon1\">"+
+                       "</div></div><div class=\"col-sm-6 col-md-6\"><div class=\"input-group input-group-lg\">"+
+                       "<input type=\"text\" placeholder=\"value\" class=\"body-value form-control\" aria-describedby=\"sizing-addon1\">"+
+                       "<span class=\"input-group-btn\"><button class=\"body-add btn btn-success\" type=\"button\">+</button></span>"+
+                       "</div></div></div>";
+               $("div.re-body").append(body_text);
+           });
+
+           $("body").on("click", "button.body-add", function () {
+               $("div.re-body").append(body_text);
+           });
+
+           $("body").on("click", "button.body-delete", function () {
+               $(this).parents("div.row").remove();
+               if($("div.re-body div.row").length == 0){
+                   $("#body_area").hide();
+               }
+           }) ;
+
+           $("#inlineRadio3").click(function () {
+               $("#body_area div.row").remove();
+               $("#body_area").show();
+               body_text = "<div class=\"row\"><textarea  style=\"height: 200px\" type=\"text\" class=\"form-control\" " +
+                            "id=\"raw_body\" placeholder=\"正文内容\"></textarea></div>";
+               $("div.re-body").append(body_text);
+           });
+           $("#inlineRadio4").click(function () {
+               $("#body_area div.row").remove();
+           });
+
+           $("#add_check").click(function () {
+               $("#check_area").show();
+               var text = "<div class=\"row\" style=\"margin-bottom: 20px\">"+
+                       "<div class=\"col-sm-6 col-md-6\"><div class=\"input-group input-group-lg\">"+
+                       "<span class=\"input-group-btn\"><button class=\"check-delete btn btn-danger\" type=\"button\">-</button>"+
+                       "</span><select class=\"form-control\" name=\"check-method\"><option>类型</option><option value=\"response_code\">响应状态码等于</option><option value=\"response_time\">响应时间小于</option></select>"+
+                       "</div></div><div class=\"col-sm-6 col-md-6\">"+
+                       "<input type=\"text\" placeholder=\"预期结果\" class=\"check-value form-control\" aria-describedby=\"sizing-addon1\">"+
+                       "</div></div>";
+               $("div.re-check").append(text);
+           });
+           $("body").on("click", "button.check-delete", function () {
+               $(this).parents("div.row").remove();
+               if($("div.re-check div.row").length == 0){
+                   $("#check_area").hide();
+               }
+           }) ;
+
+           $("#confirm").on("click", function () {
+                $("div.re-head").removeClass("has-error");
+                $("div.re-body").removeClass("has-error");
+                $("div.re-check").removeClass("has-error");
+                $("form").bootstrapValidator('validate');
+                if ($("form").data('bootstrapValidator').isValid()) {
+                    {#用例名称、用例描述、接口URL、请求类型#}
+                    var casename = $("input[name='casename']").val();
+                    var description = $("textarea[name='description']").val();
+                    var url = $("input[name='url']").val();
+                    var method = $("select[name='method'] option:selected").val();
+                    var header_info = "";
+                    var body_info = "";
+                    var check_info = "";
+                    {#取头信息，拼接#}
+                    var keys = new Array();
+                    var value = new Array();
+                    var headers = new Array();
+                    $("input.head-key").each(function(i){
+                        keys[i] = $(this).val();
+                    });
+                    $("input.head-value").each(function(i){
+                        value[i] = $(this).val();
+                    });
+                    if (isSpace(keys)==true && isSpace(value)==true){
+                       for(var i = 0;i < keys.length; i++) {
+                            headers[i] = keys[i] + "=" + value[i];
+                       }
+                       header_info = headers.join('&');
+                    }else{
+                        $("div.re-head").addClass("has-error");
+                        return;
+                    }
+
+                    {#取请求体，拼接#}
+                    var body_type = $("input[name='inlineRadioOptions']:checked").val();
+                    if(body_type){
+                       if(body_type == "form" || body_type =="encode"){
+                           var b_keys = new Array();
+                           var b_value = new Array();
+                           var bodys = new Array();
+                           $("input.body-key").each(function(i){
+                               b_keys[i] = $(this).val();
+                           });
+                           $("input.body-value").each(function(i){
+                               b_value[i] = $(this).val();
+                           });
+                           if (isSpace(b_keys)==true && isSpace(b_value)==true){
+                               for(var i = 0;i < b_keys.length; i++) {
+                                   bodys[i] = b_keys[i] + "=" + b_value[i];
+                               }
+                               body_info = bodys.join('&');
+                           }else{
+                               $("div.re-body").addClass("has-error");
+                               return;
+                           }
+                       }else if(body_type == "raw"){
+                           if( $("#raw_body").val()){
+                                body_info = $("#raw_body").val();
+                           }else {
+                               $("div.re-body").addClass("has-error");
+                               return;
+                           }
+                       }
+                    }
+                    {#取检查点，拼接#}
+                    var c_keys = new Array();
+                    var c_value = new Array();
+                    var checks = new Array();
+                    $("select[name='check-method'] option:selected").each(function(i){
+                        c_keys[i] = $(this).val();
+                    });
+                    $("input.check-value").each(function(i){
+                        c_value[i] = $(this).val();
+                    });
+                    if (isSpace(c_keys)==true && isSpace(c_value)==true){
+                       for(var i = 0;i < c_keys.length; i++) {
+                            checks[i] = c_keys[i] + "=" + c_value[i];
+                       }
+                       check_info = checks.join('&');
+                    }else{
+                        $("div.re-check").addClass("has-error");
+                        return;
+                    }
+                    $.post('/case/submit/',
+                        {
+                            name: casename,
+                            desc: description,
+                            url: url,
+                            method: method,
+                            headers: header_info,
+                            body: body_info,
+                            checks:  check_info
+                        },
+                        function (data) {
+                            if(data.flag == 0){
+                                x0p(data.message, '','ok',
+                                function() {
+                                    window.location.href = "/case/new";
+                                });
+                            }else {
+                                x0p(data.message, '','error',
+                                function() {
+                                });
+                            }
+                        }
+                    );
+                }
+           });
+
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

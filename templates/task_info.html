@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block css %}
+    <style type="text/css">
+        i {
+            margin: 3px 15px 0 0
+        }
+        h3,h2{
+            font-weight: bold;
+        }
+        .index-btn{
+            font-size: 20px;
+            color: #fff;
+        }
+        .btn-bottom{
+            margin-top: 40px;
+            margin-right: 20px;
+        }
+        .content{
+            margin-left: 20px;
+            margin-top: 100px;
+        }
+        {% endblock %}
+    </style>
+</head>
+<body>
+    {% block content %}
+    <div class="content container-fluid">
+        <div class="row-fluid">
+            <div class="col-md-9">
+                <h2>编辑测试任务</h2>
+                <p style="margin-top: 20px;margin-left: 20px;font-size: 18px">修改测试任务，并保存</p>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="col-md-10" style="margin-top: 50px">
+                <form class="form-horizontal" id="info" style="margin-left: 20px" action="/task/update/" method="post">
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">任务ID</label>
+                    <div class="col-sm-5">
+                        <input type="text" name='id' class="form-control" value={{ data.id }} readonly>
+                    </div>
+                  </div>
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">任务名称</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="taskname" value={{ data.name }}>
+                    </div>
+                  </div>
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">任务描述</label>
+                    <div class="col-sm-5">
+                        {% if data.description %}
+                            <textarea  style="height: 100px" name="description" type="text" class="form-control" id="description" placeholder="少于30个字符">{{ data.description }}</textarea>
+                        {% else %}
+                            <textarea  style="height: 100px" name="description" type="text" class="form-control" id="description" placeholder="少于30个字符"></textarea>
+                        {% endif %}
+                    </div>
+                  </div>
+                  <div class="form-group form-group-lg">
+                    <label style="text-align: left" class="col-lg-2 col-md-2 col-sm-3 control-label">测试用例</label>
+                    <div class="col-sm-5">
+                        {% if cases %}
+                            <button id="selected" class="btn btn-success btn-block index-btn"  data-toggle="modal" data-target="#myModal">已选择{{ cases|length }}个测试用例</button>
+                        {% else %}
+                            <button id="selected" class="btn btn-danger btn-block index-btn"  data-toggle="modal" data-target="#myModal">未选择测试用例</button>
+                        {% endif %}
+                        <input name="cases" id="cases" type="hidden">
+                    </div>
+                  </div>
+                  <!-- Modal -->
+                    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                              <h4 class="modal-title" id="myModalLabel"><strong>请选择测试用例</strong></h4>
+                          </div>
+                          <div class="modal-body">
+                                <div class="row">
+                                    {% if all %}
+                                        {% for case in all %}
+                                            <div class="col-md-4 col-sm-4">
+                                                 <div class="checkbox">
+                                                    <label>
+                                                        {% if case in cases %}
+                                                            <input checked="checked" type="checkbox" value={{ case.id }}> {{ case.name }}
+                                                        {% else %}
+                                                            <input type="checkbox" value={{ case.id }}> {{ case.name }}
+                                                        {% endif %}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="col-md-8 col-sm-8"><h4 style="font-weight: bold;color: red">请先添加测试用例</h4></div>
+                                    {% endif %}
+                                </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button id="select_case" type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  <div class="form-group form-group-lg">
+                    <div class="col-sm-offset-2 col-sm-10">
+                      <button id="update" type="submit" class="btn-bottom btn btn-success index-btn">保存</button>
+                      <a href="/task/list/" type="submit" class="btn-bottom btn btn-warning index-btn">返回</a>
+                    </div>
+                  </div>
+                </form>
+            </div>
+        </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function(){
+           $("form").bootstrapValidator({
+                submitButtons: '#update',
+                message: '通用的验证失败消息',
+                feedbackIcons: {//根据验证结果显示的各种图标
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-refresh'
+                },
+                fields: {
+                    taskname: {    //控件的name属性
+                        validators: {
+                            notEmpty: {//检测非空,radio也可用
+                                message: '任务名称不能为空'
+                            },
+                            stringLength: {//检测长度
+                                max: 20,
+                                message: '长度必须小于20位'
+                            }
+                        }
+                    }
+                }
+           });
+
+           //当模态对话框确认时，获取所有已经勾选的用例，修改select_case中的text和cases中的value
+           $("#select_case").click(function(){
+               $("#selected").removeClass("btn-danger");
+               $("#selected").removeClass("btn-success");
+               var l = $(".checkbox label input:checked").length;
+               if(l>0){
+                    $("#selected").addClass("btn-success");
+                    $("#selected").text("已选择"+l+"个测试用例");
+                    var arr = new Array();
+                    $(".checkbox label input:checked").each(function(i){
+                        arr[i] = $(this).val();
+                    });
+                    var vals = arr.join(",");
+                    $("#cases").val(vals);
+               }else{
+                    $("#selected").addClass("btn-danger");
+                    $("#selected").text("未选择测试用例");
+                    $("#cases").val("");
+               }
+           });
+
+           $("small").css('font-size', "16px");
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>
